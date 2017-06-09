@@ -1,6 +1,8 @@
 package verticles
 
+import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
+import domains.SunriseSunsetResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.Vertx
@@ -32,8 +34,6 @@ class MainVerticle : AbstractVerticle() {
         val url = "http://api.sunrise-sunset.org/json?" +
                 "lat=42.3583333&lng=-71.0602778&formatted=0"
 
-
-
         router.get("/home").handler {
             routingContext ->
 
@@ -41,9 +41,15 @@ class MainVerticle : AbstractVerticle() {
             val jsonStr = String(response.data, StandardCharsets.UTF_8)
 
             println("jsonStr: $jsonStr")
-            //TODO jsonParse
+
+            val sunriseSunsetResponse = JSON.parseObject(jsonStr, SunriseSunsetResponse::class.java)
+            val sunrise = sunriseSunsetResponse.results.sunrise
+            val sunset = sunriseSunsetResponse.results.sunset
 
             routingContext.put("time", SimpleDateFormat().format(Date()) + "Yiding He")
+            routingContext.put("sunrise", sunrise)
+            routingContext.put("sunset", sunset)
+
             templateEngine.render(routingContext, "public/templates/index.html", {
                 buf ->
                 if (buf.failed()) {

@@ -1,4 +1,6 @@
+import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
+import domains.SunriseSunsetResponse
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientResponse
 import io.vertx.core.logging.LoggerFactory
@@ -21,7 +23,7 @@ fun main(args: Array<String>) {
     val router = Router.router(vertx)
     val logger = LoggerFactory.getLogger("VertxServer")
     val templateEngine = ThymeleafTemplateEngine.create()
-    val port = 10004
+    val port = 8080
 
 
     if (TestConfig.IS_STOP_SERVER)
@@ -30,8 +32,6 @@ fun main(args: Array<String>) {
     val url = "http://api.sunrise-sunset.org/json?" +
             "lat=42.3583333&lng=-71.0602778&formatted=0"
 
-
-
     router.get("/home").handler {
         routingContext ->
 
@@ -39,9 +39,15 @@ fun main(args: Array<String>) {
         val jsonStr = String(response.data, StandardCharsets.UTF_8)
 
         println("jsonStr: $jsonStr")
-        //TODO jsonParse
+
+        val sunriseSunsetResponse = JSON.parseObject(jsonStr, SunriseSunsetResponse::class.java)
+        val sunrise = sunriseSunsetResponse.results.sunrise
+        val sunset = sunriseSunsetResponse.results.sunset
 
         routingContext.put("time", SimpleDateFormat().format(Date()) + "Yiding He")
+        routingContext.put("sunrise", sunrise)
+        routingContext.put("sunset", sunset)
+
         templateEngine.render(routingContext, "public/templates/index.html", {
             buf ->
             if (buf.failed()) {
@@ -61,6 +67,5 @@ fun main(args: Array<String>) {
                     logger.error("Failed to listen on port $port")
                 }
             })
-
 
 }
