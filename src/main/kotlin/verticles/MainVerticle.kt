@@ -9,6 +9,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.ThymeleafTemplateEngine
 import services.SunService
 import services.WeatherService
@@ -28,6 +29,8 @@ class MainVerticle : AbstractVerticle() {
         val router = Router.router(vertx)
         val logger = LoggerFactory.getLogger("VertxServer")
         val templateEngine = ThymeleafTemplateEngine.create()
+        val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(false)
+
         val port = 8080
         val lat = 42.3583333
         val lon = -71.0602778
