@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
 import domains.SunInfo
 import domains.SunriseSunsetResponse
+import domains.WeatherResponse
 import java.nio.charset.StandardCharsets
 
 /**
@@ -17,6 +18,7 @@ class WeatherService {
         val (request, response, result) = tempUrl.httpGet().responseString()
         val jsonStr = String(response.data, StandardCharsets.UTF_8)
         println("jsonStr: $jsonStr")
-        return jsonStr
+        val weatherResponse = JSON.parseObject(jsonStr, WeatherResponse::class.java)
+        return weatherResponse.main.temp
     }
 }
