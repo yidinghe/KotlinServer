@@ -10,6 +10,8 @@ import io.vertx.core.Vertx
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.templ.ThymeleafTemplateEngine
+import services.SunService
+import services.WeatherService
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,27 +29,21 @@ class MainVerticle : AbstractVerticle() {
         val logger = LoggerFactory.getLogger("VertxServer")
         val templateEngine = ThymeleafTemplateEngine.create()
         val port = 8080
+        val lat = 42.3583333
+        val lon = -71.0602778
 
         if (TestConfig.IS_STOP_SERVER)
             vertx.close()
 
-        val url = "http://api.sunrise-sunset.org/json?" +
-                "lat=42.3583333&lng=-71.0602778&formatted=0"
-
         router.get("/home").handler {
             routingContext ->
 
-            val (request, response, result) = url.httpGet().responseString()
-            val jsonStr = String(response.data, StandardCharsets.UTF_8)
-
-            println("jsonStr: $jsonStr")
-
-            val sunriseSunsetResponse = JSON.parseObject(jsonStr, SunriseSunsetResponse::class.java)
-            val sunInfo = SunInfo(sunriseSunsetResponse.results.sunrise, sunriseSunsetResponse.results.sunset)
-
-            routingContext.put("time", SimpleDateFormat().format(Date()) + "Yiding He")
+            val temperature = WeatherService().getTemperature(lat, lon)
+            val sunInfo = SunService().getSunInfo(lat, lon)
+            routingContext.put("time", SimpleDateFormat().format(Date()))
             routingContext.put("sunrise", sunInfo.sunrise)
             routingContext.put("sunset", sunInfo.sunset)
+            routingContext.put("temperature", temperature)
 
             templateEngine.render(routingContext, "public/templates/index.html", {
                 buf ->
