@@ -2,6 +2,7 @@ package verticles
 
 import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
+import domains.SunInfo
 import domains.SunriseSunsetResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
@@ -27,7 +28,6 @@ class MainVerticle : AbstractVerticle() {
         val templateEngine = ThymeleafTemplateEngine.create()
         val port = 8080
 
-
         if (TestConfig.IS_STOP_SERVER)
             vertx.close()
 
@@ -43,12 +43,11 @@ class MainVerticle : AbstractVerticle() {
             println("jsonStr: $jsonStr")
 
             val sunriseSunsetResponse = JSON.parseObject(jsonStr, SunriseSunsetResponse::class.java)
-            val sunrise = sunriseSunsetResponse.results.sunrise
-            val sunset = sunriseSunsetResponse.results.sunset
+            val sunInfo = SunInfo(sunriseSunsetResponse.results.sunrise, sunriseSunsetResponse.results.sunset)
 
             routingContext.put("time", SimpleDateFormat().format(Date()) + "Yiding He")
-            routingContext.put("sunrise", sunrise)
-            routingContext.put("sunset", sunset)
+            routingContext.put("sunrise", sunInfo.sunrise)
+            routingContext.put("sunset", sunInfo.sunset)
 
             templateEngine.render(routingContext, "public/templates/index.html", {
                 buf ->
