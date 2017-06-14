@@ -3,6 +3,7 @@ package verticles
 import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
 import domains.SunInfo
+import domains.SunWeatherInfo
 import domains.SunriseSunsetResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
@@ -37,6 +38,18 @@ class MainVerticle : AbstractVerticle() {
 
         if (TestConfig.IS_STOP_SERVER)
             vertx.close()
+
+        router.route("/public/*").handler(staticHandler)
+
+        router.get("/api/data").handler {
+            ctx ->
+            val temperature = WeatherService().getTemperature(lat, lon)
+            val sunInfo = SunService().getSunInfo(lat, lon)
+            val sunWeatherInfo = SunWeatherInfo(sunInfo, temperature)
+            val json = JSON.toJSONString(sunWeatherInfo)
+            val response = ctx.response()
+            response.end(json)
+        }
 
         router.get("/home").handler {
             routingContext ->
