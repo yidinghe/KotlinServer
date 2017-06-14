@@ -1,0 +1,15 @@
+{
+  "server": {
+    "port": 8080,
+    "caching": false
+  },
+  "dataSource":{
+    "user": "kotlinuser",
+    "password": "kotlinpass",
+    "jdbcUrl": "jdbc:postgresql://localhost:5432/kotlindb"
+  },
+  "debug": {
+    "lat": 42.3583333,
+    "lon": -71.0602778
+  }
+}

@@ -1,20 +1,18 @@
 package verticles
 
 import com.alibaba.fastjson.JSON
-import com.github.kittinunf.fuel.httpGet
-import domains.SunInfo
+import domains.DataSourceConfig
+import domains.DebugConfig
+import domains.ServerConfig
 import domains.SunWeatherInfo
-import domains.SunriseSunsetResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
-import io.vertx.core.Vertx
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.ThymeleafTemplateEngine
 import services.SunService
 import services.WeatherService
-import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,11 +28,16 @@ class MainVerticle : AbstractVerticle() {
         val router = Router.router(vertx)
         val logger = LoggerFactory.getLogger("VertxServer")
         val templateEngine = ThymeleafTemplateEngine.create()
-        val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(false)
 
-        val port = 8080
-        val lat = 42.3583333
-        val lon = -71.0602778
+        val serverConfig = JSON.parseObject(config().getJsonObject("server").encode(), ServerConfig::class.java)
+        val debugConfig = JSON.parseObject(config().getJsonObject("debug").encode(), DebugConfig::class.java)
+        val dataSourceConfig = JSON.parseObject(config().getJsonObject("dataSource").encode(), DataSourceConfig::class.java)
+
+        val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(serverConfig.caching)
+
+        val port = serverConfig.port
+        val lat = debugConfig.lat
+        val lon = debugConfig.lon
 
         if (TestConfig.IS_STOP_SERVER)
             vertx.close()

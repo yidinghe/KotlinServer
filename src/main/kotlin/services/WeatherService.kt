@@ -2,8 +2,6 @@ package services
 
 import com.alibaba.fastjson.JSON
 import com.github.kittinunf.fuel.httpGet
-import domains.SunInfo
-import domains.SunriseSunsetResponse
 import domains.WeatherResponse
 import java.nio.charset.StandardCharsets
 
