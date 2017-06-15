@@ -9,6 +9,8 @@ buildscript {
     ext.fuel_version = '1.3.1'
     ext.hikari_version = '2.6.1'
     ext.pgjdbc_version = '42.1.1.jre7'
+    ext.flyway_version = '4.2.0'
+    ext.functionale_version = '1.1'
 
     repositories {
         jcenter()
@@ -36,6 +38,8 @@ dependencies {
     compile "org.slf4j:slf4j-simple:$log4j_version"
     compile "com.zaxxer:HikariCP:$hikari_version"
     compile "org.postgresql:postgresql:$pgjdbc_version"
+    compile "org.flywaydb:flyway-core:$flyway_version"
+    compile "org.funktionale:funktionale-all:$functionale_version"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

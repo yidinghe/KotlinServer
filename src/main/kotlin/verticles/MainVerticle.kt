@@ -1,6 +1,7 @@
 package verticles
 
 import com.alibaba.fastjson.JSON
+import com.zaxxer.hikari.HikariDataSource
 import domains.DataSourceConfig
 import domains.DebugConfig
 import domains.ServerConfig
@@ -11,6 +12,7 @@ import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.ThymeleafTemplateEngine
+import services.MigrationService
 import services.SunService
 import services.WeatherService
 import java.text.SimpleDateFormat
@@ -22,6 +24,17 @@ import java.util.*
 
 class MainVerticle : AbstractVerticle() {
 
+    private var hikariDataSource: HikariDataSource? = null
+
+    private fun initDataSource(config: DataSourceConfig): HikariDataSource {
+        val hikariDS = HikariDataSource()
+        hikariDS.username = config.user
+        hikariDS.password = config.password
+        hikariDS.jdbcUrl = config.jdbcUrl
+        hikariDataSource = hikariDS
+        return hikariDS
+    }
+
     override fun start(startFuture: Future<Void>?) {
 
         val server = vertx.createHttpServer()
@@ -32,6 +45,22 @@ class MainVerticle : AbstractVerticle() {
         val serverConfig = JSON.parseObject(config().getJsonObject("server").encode(), ServerConfig::class.java)
         val debugConfig = JSON.parseObject(config().getJsonObject("debug").encode(), DebugConfig::class.java)
         val dataSourceConfig = JSON.parseObject(config().getJsonObject("dataSource").encode(), DataSourceConfig::class.java)
+
+        fun migrateDb(config: DataSourceConfig) {
+            val dataSource = initDataSource(config)
+            val migrationService = MigrationService(dataSource)
+            val migrationResult = migrationService.migrate()
+            migrationResult.fold({
+                throwable ->
+                logger.fatal("Exception occurred while performing migration", throwable)
+                vertx.close()
+            }, {
+                res ->
+                logger.debug("Migration successful or not needed")
+            })
+        }
+
+        migrateDb(dataSourceConfig)
 
         val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(serverConfig.caching)
 
@@ -84,5 +113,9 @@ class MainVerticle : AbstractVerticle() {
                     }
                 })
 
+    }
+
+    override fun stop(stopFuture: Future<Void>?) {
+        hikariDataSource?.close()
     }
 }
