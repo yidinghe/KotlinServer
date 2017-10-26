@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Created by yiding.he on 6/12/2017.
  */
-class SunService{
+class SunService {
     fun getSunInfo(lat: Double, lon: Double): SunInfo {
         val sunUrl = "http://api.sunrise-sunset.org/json?" +
                 "lat=$lat&lng=$lon&formatted=0"

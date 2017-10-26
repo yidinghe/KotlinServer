@@ -50,12 +50,10 @@ class MainVerticle : AbstractVerticle() {
             val dataSource = initDataSource(config)
             val migrationService = MigrationService(dataSource)
             val migrationResult = migrationService.migrate()
-            migrationResult.fold({
-                throwable ->
+            migrationResult.fold({ throwable ->
                 logger.fatal("Exception occurred while performing migration", throwable)
                 vertx.close()
-            }, {
-                res ->
+            }, { res ->
                 logger.debug("Migration successful or not needed")
             })
         }
@@ -73,8 +71,7 @@ class MainVerticle : AbstractVerticle() {
 
         router.route("/public/*").handler(staticHandler)
 
-        router.get("/api/weather/data").handler {
-            routingContext ->
+        router.get("/api/weather/data").handler { routingContext ->
             val temperature = WeatherService().getTemperature(lat, lon)
             val sunInfo = SunService().getSunInfo(lat, lon)
             val sunWeatherInfo = SunWeatherInfo(sunInfo, temperature)
@@ -83,9 +80,7 @@ class MainVerticle : AbstractVerticle() {
             response.end(json)
         }
 
-        router.get("/home").handler {
-            routingContext ->
-
+        router.get("/home").handler { routingContext ->
             val temperature = WeatherService().getTemperature(lat, lon)
             val sunInfo = SunService().getSunInfo(lat, lon)
             routingContext.put("time", SimpleDateFormat().format(Date()))
@@ -93,8 +88,7 @@ class MainVerticle : AbstractVerticle() {
             routingContext.put("sunset", sunInfo.sunset)
             routingContext.put("temperature", temperature)
 
-            templateEngine.render(routingContext, "public/templates/index.html", {
-                buf ->
+            templateEngine.render(routingContext, "public/templates/index.html", { buf ->
                 if (buf.failed()) {
                     logger.error("Template rendering failed", buf.cause())
                 } else {
@@ -106,8 +100,7 @@ class MainVerticle : AbstractVerticle() {
         }
 
         server.requestHandler { router.accept(it) }
-                .listen(port, {
-                    listenHandler ->
+                .listen(port, { listenHandler ->
                     if (!listenHandler.succeeded()) {
                         logger.error("Failed to listen on port $port")
                     }
