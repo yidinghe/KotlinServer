@@ -62,8 +62,6 @@ class MainVerticle : AbstractVerticle() {
 
         migrateDb(dataSourceConfig)
 
-        val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(serverConfig.caching)
-
         val port = serverConfig.port
         val lat = debugConfig.lat
         val lon = debugConfig.lon
@@ -71,15 +69,17 @@ class MainVerticle : AbstractVerticle() {
         if (TestConfig.IS_STOP_SERVER)
             vertx.close()
 
+        val staticHandler = StaticHandler.create().setWebRoot("public").setCachingEnabled(serverConfig.caching)
+
         router.route("/public/*").handler(staticHandler)
 
-        router.get("/api/data").handler {
-            ctx ->
+        router.get("/api/weather/data").handler {
+            routingContext ->
             val temperature = WeatherService().getTemperature(lat, lon)
             val sunInfo = SunService().getSunInfo(lat, lon)
             val sunWeatherInfo = SunWeatherInfo(sunInfo, temperature)
             val json = JSON.toJSONString(sunWeatherInfo)
-            val response = ctx.response()
+            val response = routingContext.response()
             response.end(json)
         }
 

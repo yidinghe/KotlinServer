@@ -13,7 +13,7 @@ class SunService{
     fun getSunInfo(lat: Double, lon: Double): SunInfo {
         val sunUrl = "http://api.sunrise-sunset.org/json?" +
                 "lat=$lat&lng=$lon&formatted=0"
-        val (request, response, result) = sunUrl.httpGet().responseString()
+        val (_, response, _) = sunUrl.httpGet().responseString()
         val jsonStr = String(response.data, StandardCharsets.UTF_8)
         println("jsonStr: $jsonStr")
         val sunriseSunsetResponse = JSON.parseObject(jsonStr, SunriseSunsetResponse::class.java)
